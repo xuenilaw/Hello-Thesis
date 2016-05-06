@@ -33,6 +33,8 @@ int TimeBySide = 2000;
 //END
 //x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x
 
+/*INT8U len = 0;
+INT8U buf[8];*/
 INT8U lenpos = 0;
 INT8U bufpos[8];
 INT8U lenspeed = 0;
@@ -40,7 +42,7 @@ INT8U bufspeed[8];
 INT32U canId = 0x000;
 
 
-
+signed long allpos = 0;
 //PWM ports
 int PWMinSA1 = 10;    // PWM signal to put piston accel in
 int PWMoutSA1 = 11;    // PWM signal to put piston accel out
@@ -89,8 +91,10 @@ START_INIT:
 		goto START_INIT;
 	}
 
-	// put your setup code here, to run once:
+	Movement();
 
+	// put your setup code here, to run once:
+	/*
 	// SAP- Maximum positioning speed
 	node = 0x05;
 	stmp[0] = 0x05;
@@ -102,7 +106,7 @@ START_INIT:
 	stmp[6] = 0x64;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
-
+	
 	//SAP- Max Acceleration
 	node = 0x05;
 	stmp[0] = 0x05;
@@ -150,7 +154,6 @@ START_INIT:
 	stmp[6] = 0x04;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
-
 	
 	//SAP- Set actual speed
 	node = 0x05;
@@ -163,9 +166,7 @@ START_INIT:
 	stmp[6] = 0x00;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
-	delay(500);
-	readCANbusSpeed();
-	
+	delay(500);	
 
 	//SAP Reset actual position
 	node = 0x05;
@@ -178,62 +179,98 @@ START_INIT:
 	stmp[6] = 0x00;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
-	readCANbusPos();
-
-
-	//Move to position
-	node = 0x05;
-	stmp[0] = 0x04;
-	stmp[1] = 0x01;
-	stmp[2] = 0x00;
-	stmp[3] = 0x00;
-	stmp[4] = 0x00;
-	stmp[5] = 0x9c;
-	stmp[6] = 0x40;
-	stmp[7] = 0x00;
-	CAN.sendMsgBuf(node, 0, 8, stmp);
-	
 	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
+	*/
+
 	
 
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
-	
+}
+/*
+void readCANbus()
+{
+READ_CAN:
+	//Get Can bus data
+	CAN.readMsgBuf(&len, buf);
+	canId = CAN.getCanId();
+	//Print data to the serial console
+	Serial.println("CAN_BUS GET DATA!");
+	Serial.print("CAN ID:");
+	Serial.println(canId);
+	Serial.print("data len="); Serial.println(len);
+	//This loops through each byte of data and prints it
+	for (int i = 0; i < len; i++)
+	{
+		Serial.print(buf[i], HEX); Serial.print("\t");
+	}
+	Serial.println();
 
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
-	
+	Serial.print("\nPosition:  ");
 
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
+	int byte4 = buf[2];
+	int byte3 = buf[3];
+	int byte2 = buf[4];
+	int byte1 = buf[5];
+	int byte0 = buf[6];
+	signed long all = (signed long)byte3 << 24 | (unsigned long)byte2 << 16 | (unsigned long)byte1 << 8 | (unsigned long)byte0;
 
+	if (byte4 == 6)
+	{
+		Serial.println(all, DEC);
+		delay(50);
+	}
+	else
+	{
+		Serial.println("Wait...");
+	}
+}
+*/
+void Movement()
+{
 
-	delay(1000);
 	readCANbusPos();
-	//readCANbusSpeed();
+
+	if (allpos >= 0)
+	{
+		node = 0x05;
+		stmp[0] = 0x04;
+		stmp[1] = 0x01;
+		stmp[2] = 0x00;
+		stmp[3] = 0x00;
+		stmp[4] = 0x01;
+		stmp[5] = 0x01;
+		stmp[6] = 0x2c;
+		stmp[7] = 0x00;
+		CAN.sendMsgBuf(node, 0, 8, stmp);
+		delay(200);
+		Serial.println("All pos = 0 is sending ");
+		
+	}
+	if (allpos < 0)
+	{
+		//Move to position
+		node = 0x05;
+		stmp[0] = 0x04;
+		stmp[1] = 0x01;
+		stmp[2] = 0x00;
+		stmp[3] = 0x00;
+		stmp[4] = 0x01;
+		stmp[5] = 0x5f;
+		stmp[6] = 0x90;
+		stmp[7] = 0x00;
+		CAN.sendMsgBuf(node, 0, 8, stmp);
+		delay(200);
+		Serial.println("All pos < 0 ");
+	}
+	else
+	{
+		Serial.println("Please wait...");
+	}
+
 }
 
 
 void readCANbusPos()  
 {
-	
-	//Get axis parameter- Current position
-	node = 0x05;
-	stmp[0] = 0x06;
-	stmp[1] = 0x01;
-	stmp[2] = 0x00;
-	stmp[3] = 0x00;
-	stmp[4] = 0x00;
-	stmp[5] = 0x00;
-	stmp[6] = 0x00;
-	stmp[7] = 0x00;
-	CAN.sendMsgBuf(node, 0, 8, stmp);
-
 
 	//Get Can bus data
 	CAN.readMsgBuf(&lenpos, bufpos);
@@ -251,7 +288,7 @@ void readCANbusPos()
 	Serial.println();
 
 	Serial.print("\nPosition:  ");
-
+	int byte4 = bufpos[2];
 	int byte3 = bufpos[3];
 	int byte2 = bufpos[4];
 	int byte1 = bufpos[5];
@@ -259,28 +296,23 @@ void readCANbusPos()
 
 	signed long allpos = (signed long)byte3 << 24 | (unsigned long)byte2 << 16 | (unsigned long)byte1 << 8 | (unsigned long)byte0;
 	//Serial.println(allpos, HEX);
-	
-	Serial.println(allpos, DEC);
+	if (byte4 == 6)
+	{
+		Serial.println(allpos, DEC);
+		delay(50);
+	}
+	else
+	{
+		Serial.println("Wait...");
+	}
 
-
-	delay(500);
+	delay(50);
 	
 }
 
 
 void readCANbusSpeed()
 {
-	//Get axis parameter- Current Speed
-	node = 0x05;
-	stmp[0] = 0x06;
-	stmp[1] = 0x03;
-	stmp[2] = 0x00;
-	stmp[3] = 0x00;
-	stmp[4] = 0x00;
-	stmp[5] = 0x00;
-	stmp[6] = 0x00;
-	stmp[7] = 0x00;
-	CAN.sendMsgBuf(node, 0, 8, stmp);
 
 	//Get Can bus data
 	CAN.readMsgBuf(&lenspeed, bufspeed);
@@ -297,7 +329,7 @@ void readCANbusSpeed()
 		Serial.print(bufspeed[i], HEX); Serial.print("\t");
 	}
 	Serial.println();
-
+	int bytespeed4 = bufspeed[2];
 	int bytespeed3 = bufspeed[3];
 	int bytespeed2 = bufspeed[4];
 	int bytespeed1 = bufspeed[5];
@@ -306,12 +338,70 @@ void readCANbusSpeed()
 	signed long allspeed = (signed long)bytespeed3 << 24 | (unsigned long)bytespeed2 << 16 | (unsigned long)bytespeed1 << 8 | (unsigned long)bytespeed0;
 	//Serial.println(allspeed, HEX);
 	Serial.print("\nSpeed:  ");
-	Serial.println(allspeed, DEC);
+	if (bytespeed4 == 6)
+	{
+		Serial.println(allspeed, DEC);
+		delay(50);
+	}
+	else
+	{
+		Serial.println("Wait...");
+	}
 
-	delay(500);
-
+	delay(50);
+	
 }
 
 void loop() {
+
+	Movement();
+	//Get axis parameter- Current Speed
+	node = 0x05;
+	stmp[0] = 0x06;
+	stmp[1] = 0x03;
+	stmp[2] = 0x00;
+	stmp[3] = 0x00;
+	stmp[4] = 0x00;
+	stmp[5] = 0x00;
+	stmp[6] = 0x00;
+	stmp[7] = 0x00;
+	CAN.sendMsgBuf(node, 0, 8, stmp);
+	delay(100);
+	readCANbusPos();
+	Serial.println("-----------------------------------------");
+
+
+	delay(2000);
+
+	//Get axis parameter- Current position
+	node = 0x05;
+	stmp[0] = 0x06;
+	stmp[1] = 0x01;
+	stmp[2] = 0x00;
+	stmp[3] = 0x00;
+	stmp[4] = 0x00;
+	stmp[5] = 0x00;
+	stmp[6] = 0x00;
+	stmp[7] = 0x00;
+	CAN.sendMsgBuf(node, 0, 8, stmp);
+	delay(100);
+	readCANbusSpeed();
+	Serial.println("-----------------------------------------");
+
+	delay(2000);
+
+	node = 0x05;
+	stmp[0] = 0x03;
+	stmp[1] = 0x00;
+	stmp[2] = 0x00;
+	stmp[3] = 0x00;
+	stmp[4] = 0x00;
+	stmp[5] = 0x00;
+	stmp[6] = 0x00;
+	stmp[7] = 0x00;
+	CAN.sendMsgBuf(node, 0, 8, stmp);
+	delay(10000);
+
+	
 
 }
