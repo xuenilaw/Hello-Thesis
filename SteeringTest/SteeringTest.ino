@@ -33,6 +33,8 @@ int TimeBySide = 2000;
 //END
 //x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x
 
+INT8U len = 0;
+INT8U buf[8];
 INT8U lenpos = 0;
 INT8U bufpos[8];
 INT8U lenspeed = 0;
@@ -90,7 +92,7 @@ START_INIT:
 	}
 
 	// put your setup code here, to run once:
-
+	
 	// SAP- Maximum positioning speed
 	node = 0x05;
 	stmp[0] = 0x05;
@@ -102,6 +104,8 @@ START_INIT:
 	stmp[6] = 0x64;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
+	CAN.readMsgBuf(&len, buf);
+	delay(100);
 
 	//SAP- Max Acceleration
 	node = 0x05;
@@ -114,6 +118,8 @@ START_INIT:
 	stmp[6] = 0xf4;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
+	CAN.readMsgBuf(&len, buf);
+	delay(100);
 
 	//SAP- Set Max current 
 	node = 0x05;
@@ -126,6 +132,8 @@ START_INIT:
 	stmp[6] = 0x64;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
+	CAN.readMsgBuf(&len, buf);
+	delay(100);
 
 	//SAP- Set standby current
 	node = 0x05;
@@ -138,6 +146,8 @@ START_INIT:
 	stmp[6] = 0x32;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
+	CAN.readMsgBuf(&len, buf);
+	delay(100);
 
 	//SAP- Set microstep solution
 	node = 0x05;
@@ -150,23 +160,10 @@ START_INIT:
 	stmp[6] = 0x04;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
+	CAN.readMsgBuf(&len, buf);
+	delay(100);
 
 	
-	//SAP- Set actual speed
-	node = 0x05;
-	stmp[0] = 0x05;
-	stmp[1] = 0x03;
-	stmp[2] = 0x00;
-	stmp[3] = 0x00;
-	stmp[4] = 0x00;
-	stmp[5] = 0x00;
-	stmp[6] = 0x00;
-	stmp[7] = 0x00;
-	CAN.sendMsgBuf(node, 0, 8, stmp);
-	delay(500);
-	readCANbusSpeed();
-	
-
 	//SAP Reset actual position
 	node = 0x05;
 	stmp[0] = 0x05;
@@ -178,9 +175,9 @@ START_INIT:
 	stmp[6] = 0x00;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
-	readCANbusPos();
-
-
+	CAN.readMsgBuf(&len, buf);
+	delay(100);
+	
 	//Move to position
 	node = 0x05;
 	stmp[0] = 0x04;
@@ -192,30 +189,9 @@ START_INIT:
 	stmp[6] = 0x40;
 	stmp[7] = 0x00;
 	CAN.sendMsgBuf(node, 0, 8, stmp);
-	
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
-	
+	CAN.readMsgBuf(&len, buf);
+	delay(100);
 
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
-	
-
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
-	
-
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
-
-
-	delay(1000);
-	readCANbusPos();
-	//readCANbusSpeed();
 }
 
 
@@ -314,4 +290,7 @@ void readCANbusSpeed()
 
 void loop() {
 
+	readCANbusPos();
+	readCANbusSpeed();
+	delay(1000);
 }
