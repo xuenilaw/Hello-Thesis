@@ -1,3 +1,2 @@
 # Hello-Thesis
-Starting a Thesis 
-// Testing 123 
+This is a master thesis documented at 2016, under CARISSMA - a research institute in Technische Hochschule Ingolstadt. 
